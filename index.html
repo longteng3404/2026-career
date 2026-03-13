@@ -183,8 +183,7 @@
                             <img src={result.imageUrl} alt={formData.mbti} 
                                  onError={(e) => { 
                                      if(!e.target.src.includes('placehold.co')) {
-                                         // 💡 改為白底紅字，避免圖片未載入時出現一整塊紅色區塊
-                                         e.target.src = 'https://placehold.co/1080x1440/ffffff/c92e27?text=' + formData.mbti + '+專屬結果卡';
+                                         e.target.src = 'https://placehold.co/1080x1440/c92e27/ffffff?text=' + formData.mbti + '+專屬結果卡';
                                      }
                                  }}
                                  className="w-full h-full object-contain" />
@@ -219,9 +218,8 @@
                     )}
                     
                     {/* 卡片主體：設定最大高度與寬度，讓它在各種設備下都保持「卡片感」 */}
-                    {/* 💡 透過 view === 'form' 判斷，只有在表單頁才顯示紅色的頂部 border-t-8 */}
                     <div 
-                        className={`w-full max-w-md md:max-w-lg bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col relative animate-fade-in transition-all duration-300 ${view === 'form' ? 'border-t-[8px] border-[#c92e27]' : ''}`}
+                        className="w-full max-w-md md:max-w-lg bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col relative animate-fade-in"
                         style={{ maxHeight: 'calc(100dvh - 5rem)' }}
                     >
                         {view === 'form' && renderForm()}
