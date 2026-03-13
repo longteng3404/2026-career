@@ -56,7 +56,7 @@
                 ]
             },
             {
-                text: '當你在審閱一本即將出版的教科書內容時，你最先注意到的是？',
+                text: '【編輯情境】當你在審閱一本即將出版的教科書內容時，你最先注意到的是？',
                 options: [
                     { text: '內容的準確性、數據是否正確、錯別字與排版細節。', value: 'S' },
                     { text: '整體章節的邏輯架構、核心概念是否能啟發學生思考。', value: 'N' }
@@ -84,7 +84,7 @@
                 ]
             },
             {
-                text: '【產品情境】距離新教材上線還有一段時間，大綱已經定案了，你的工作狀態是？',
+                text: '距離新教材上線還有一段時間，大綱已經定案了，你的工作狀態是？',
                 options: [
                     { text: '依照原本排定的時程表按部就班完成，不喜歡臨時發生大改動。', value: 'J' },
                     { text: '保持彈性，如果突然有更好的靈感或市場回饋，隨時準備調整方向。', value: 'P' }
@@ -138,21 +138,6 @@
                 </svg>
             );
         };
-
-        const CompanyLogo = () => (
-            <div className="flex justify-center mb-6 mt-4 px-4">
-                <img 
-                    src="./LOGO.svg" 
-                    alt="龍騰文化" 
-                    className="h-10 w-auto object-contain"
-                    onError={(e) => { 
-                        if(!e.target.src.includes('img/LOGO.svg')) {
-                            e.target.src = './img/LOGO.svg';
-                        }
-                    }} 
-                />
-            </div>
-        );
 
         function App() {
             const [view, setView] = useState('form'); 
@@ -224,12 +209,20 @@
             };
 
             const renderForm = () => (
-                <div className="max-w-md mx-auto w-full bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in border-t-8 border-[#c92e27]">
-                    <CompanyLogo />
-                    <div className="px-8 pb-4 text-center">
-                        <h1 className="text-2xl font-black text-gray-800 tracking-tight">職涯性格探索</h1>
-                        <p className="text-gray-500 text-sm mt-2">找出隱藏的職場潛力，預見未來更好的自己</p>
-                    </div>
+                <div className="max-w-md mx-auto w-full bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in">
+                    {/* 1. 移除了這裡原本的 border-t-8 border-[#c92e27] */}
+                    {/* 2. 移除 CompanyLogo 與文字標題，替換為您的滿版主視覺圖片 */}
+                    <img 
+                        src="./img/main_banner.jpg" 
+                        alt="龍騰文化 職涯性格探索" 
+                        className="w-full h-auto object-cover"
+                        onError={(e) => { 
+                            // 預防圖片還沒上傳時破圖，會自動顯示紅底佔位圖
+                            if(!e.target.src.includes('placehold.co')) {
+                                e.target.src = 'https://placehold.co/1080x720/c92e27/ffffff?text=主要Banner圖片';
+                            }
+                        }} 
+                    />
                     
                     <form onSubmit={handleStartQuiz} className="p-8 space-y-6">
                         <div className="space-y-4">
@@ -249,6 +242,7 @@
 
                         {/* 🌟 個人資料保護聲明 🌟 */}
                         <div className="px-1 py-2">
+                            {/* 將 text-center 改為 text-left 即可讓文字靠左對齊 */}
                             <p className="text-[10px] text-gray-400 leading-relaxed text-left">
                                 本測驗蒐集之資料僅供龍騰文化事業股份有限公司人力資源部進行招募聯繫與內部統計使用，我們承諾尊重您的隱私且不將資料用於他途。點擊「開始探索」即代表您同意上述條款。
                             </p>
