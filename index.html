@@ -209,12 +209,11 @@
             };
 
             const renderForm = () => (
-                // 💡 將 md: 改為 lg:，確保 iPad (通常為 md 尺寸) 也是全螢幕無框設計
-                <div className="w-full bg-white lg:rounded-3xl shadow-none lg:shadow-2xl overflow-hidden animate-fade-in border-t-0 lg:border-t-8 border-[#c92e27]">
+                <div className="w-full bg-white md:rounded-3xl shadow-none md:shadow-2xl overflow-hidden animate-fade-in border-t-0 md:border-t-8 border-[#c92e27]">
                     <img 
                         src="./img/main_banner.jpg" 
                         alt="龍騰文化 職涯性格探索" 
-                        className="w-full h-auto object-cover block"
+                        className="w-full h-auto max-h-[40vh] md:max-h-[50vh] object-cover block"
                         onError={(e) => { 
                             if(!e.target.src.includes('placehold.co')) {
                                 e.target.src = 'https://placehold.co/1080x720/c92e27/ffffff?text=主要Banner圖片';
@@ -256,8 +255,7 @@
                 const progress = ((currentQuestionIdx + 1) / quizQuestions.length) * 100;
 
                 return (
-                    // 💡 將 md: 改為 lg:
-                    <div className="w-full bg-white lg:rounded-3xl shadow-none lg:shadow-2xl overflow-hidden animate-fade-in border-t-0 lg:border-t-8 border-[#c92e27] pb-8">
+                    <div className="w-full bg-white md:rounded-3xl shadow-none md:shadow-2xl overflow-hidden animate-fade-in border-t-0 md:border-t-8 border-[#c92e27] pb-8">
                         <div className="px-8 pt-8 pb-4">
                             <div className="w-full bg-gray-100 rounded-full h-2 mb-6">
                                 <div className="bg-[#c92e27] h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
@@ -296,20 +294,19 @@
             const renderResult = () => {
                 const result = mbtiData[formData.mbti] || mbtiData['INTJ'];
                 return (
-                    // 💡 將 md: 改為 lg:
-                    <div className="w-full bg-white lg:rounded-3xl shadow-none lg:shadow-2xl overflow-hidden animate-fade-in">
+                    <div className="w-full bg-white md:rounded-3xl shadow-none md:shadow-2xl overflow-hidden animate-fade-in border-t-0 md:border-t-8 border-[#c92e27]">
                         
-                        {/* 💡 結果卡片圖片：滿版顯示，取代原本的文字區塊 */}
+                        {/* 💡 自適應高度的卡片圖片：加入 max-h-[70vh] 與 object-contain */}
                         <img src={result.imageUrl} alt={formData.mbti} 
                              onError={(e) => { 
                                  if(!e.target.src.includes('placehold.co')) {
                                      e.target.src = 'https://placehold.co/1080x1440/c92e27/ffffff?text=' + formData.mbti + '+專屬結果卡';
                                  }
                              }}
-                             className="w-full h-auto object-cover block" />
+                             className="w-full max-h-[70vh] object-contain bg-white block mx-auto" />
                         
                         {/* 💡 底部按鈕區 */}
-                        <div className="p-6 lg:p-8 space-y-4 bg-white">
+                        <div className="p-6 md:p-8 space-y-4 bg-white border-t border-gray-50">
                             <a 
                                 href="https://www.104.com.tw/company/au6siqw" 
                                 target="_blank" 
@@ -323,28 +320,31 @@
                                 <Icon name="arrowLeft" className="w-4 h-4" /> 再玩一次
                             </button>
                         </div>
-
                     </div>
                 );
             };
 
             return (
-                // 💡 調整最外層背景，lg 以上才顯示灰底與內縮，並且調整 max-w-md 為 lg:max-w-lg 讓 iPad 上閱讀起來更大方
-                <div className="min-h-[100dvh] bg-white lg:bg-[#f3f4f6] py-0 lg:py-12 px-0 lg:px-4 font-sans flex flex-col justify-start lg:justify-center items-center">
+                // 💡 修改了外層架構，確保畫面完美置中，且手機版底色為全白
+                <div className="min-h-[100dvh] bg-white md:bg-[#f3f4f6] font-sans flex flex-col">
                     {message && (
                         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full z-50 animate-fade-in shadow-xl text-sm font-bold">
                             {message}
                         </div>
                     )}
                     
-                    <div className="w-full max-w-md md:max-w-lg">
-                        {view === 'form' && renderForm()}
-                        {view === 'quiz' && renderQuiz()}
-                        {view === 'result' && renderResult()}
-                        
-                        <div className="mt-8 text-center pb-8">
-                            <p className="text-xs text-gray-400 mb-2">2026 龍騰文化事業股份有限公司 © 版權所有</p>
+                    {/* 使用 flex-grow 讓內容區域撐開，並保持完美置中 */}
+                    <div className="flex-grow flex flex-col justify-center items-center w-full px-0 md:px-6 py-0 md:py-12">
+                        <div className="w-full max-w-md md:max-w-lg my-auto">
+                            {view === 'form' && renderForm()}
+                            {view === 'quiz' && renderQuiz()}
+                            {view === 'result' && renderResult()}
                         </div>
+                    </div>
+                    
+                    {/* 頁尾 */}
+                    <div className="w-full text-center pb-6 pt-4 bg-white md:bg-transparent">
+                        <p className="text-xs text-gray-400">2026 龍騰文化事業股份有限公司 © 版權所有</p>
                     </div>
                 </div>
             );
