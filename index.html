@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>龍騰文化 - 職涯潛力探索</title>
-    <!-- 引入 Tailwind CSS 與 React -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -14,13 +13,20 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         /* 隱藏捲軸但保留滑動功能 */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 自訂 select 的下拉箭頭，蓋掉 iOS 預設樣式 */
+        .custom-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2em;
+        }
     </style>
 </head>
 <body>
@@ -29,77 +35,7 @@
     <script type="text/babel">
         const { useState } = React;
 
-        // --- 🌟 Google Sheets 接收端網址 🌟 ---
         const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbyuORP37J-dRdXe8OSb2OJaoiPA9ByjI_4r7tJ34H1_MdJQNQcR-p5Fie1xVBcspwmptQ/exec";
-
-        // --- 🌟 測驗題目設定 (共8題，含出版/教科書情境) 🌟 ---
-        const quizQuestions = [
-            {
-                text: '忙碌了一整週，終於迎來週末，你通常喜歡怎麼度過？',
-                options: [
-                    { text: '和朋友聚餐狂歡，或是去熱鬧的地方走走。', value: 'E' },
-                    { text: '待在家安靜看書、追劇，享受一個人的時光。', value: 'I' }
-                ]
-            },
-            {
-                text: '準備發想新版教科書的行銷企劃時，你更傾向哪種參與方式？',
-                options: [
-                    { text: '跟大家在會議室熱烈討論，一邊交流一邊激發新點子。', value: 'E' },
-                    { text: '先自己蒐集資料、整理好草案，再有條理地向大家報告。', value: 'I' }
-                ]
-            },
-            {
-                text: '面對一個全新的專案任務時，你的直覺做法是？',
-                options: [
-                    { text: '參考過去的成功經驗，按部就班列出具體執行步驟。', value: 'S' },
-                    { text: '腦力激盪各種可能性，構思創新的藍圖與點子。', value: 'N' }
-                ]
-            },
-            {
-                text: '【編輯情境】當你在審閱一本即將出版的教科書內容時，你最先注意到的是？',
-                options: [
-                    { text: '內容的準確性、數據是否正確、錯別字與排版細節。', value: 'S' },
-                    { text: '整體章節的邏輯架構、核心概念是否能啟發學生思考。', value: 'N' }
-                ]
-            },
-            {
-                text: '在團隊中遇到意見分歧需要做決定時，你通常更看重？',
-                options: [
-                    { text: '邏輯分析、客觀事實與執行效率。', value: 'T' },
-                    { text: '團隊氣氛、個人價值觀與夥伴的感受。', value: 'F' }
-                ]
-            },
-            {
-                text: '如果有位合作的作者因為截稿壓力而情緒低落，你會怎麼協助他？',
-                options: [
-                    { text: '幫他重新梳理時程表，找出可以優化進度、解決卡關的具體方法。', value: 'T' },
-                    { text: '先傾聽他的壓力並給予同理與鼓勵，讓他心情平復後再討論進度。', value: 'F' }
-                ]
-            },
-            {
-                text: '跟朋友一起出去旅行，你是屬於哪一派？',
-                options: [
-                    { text: '行前詳細規劃行程，把車票住宿都訂好，按表操課。', value: 'J' },
-                    { text: '大概知道要去哪就好，走到哪玩到哪，喜歡隨遇而安。', value: 'P' }
-                ]
-            },
-            {
-                text: '距離新教材上線還有一段時間，大綱已經定案了，你的工作狀態是？',
-                options: [
-                    { text: '依照原本排定的時程表按部就班完成，不喜歡臨時發生大改動。', value: 'J' },
-                    { text: '保持彈性，如果突然有更好的靈感或市場回饋，隨時準備調整方向。', value: 'P' }
-                ]
-            }
-        ];
-
-        // --- 🌟 龍騰文化 職缺與 MBTI 設定 🌟 ---
-        const jobDescriptions = {
-            '科目編輯': '編製各科普技高教科書、參考書籍，協助作者，打造老師好教、學生好學的學習方案。',
-            '科目產品企劃': '教育市場需求調研、師生使用行為追蹤，探索學習的各種可能性；研發規劃教學及學習、考測有關之產品、資源或服務。',
-            '數位行銷': '數位行銷企劃、從數據中萃取和分析顧客資訊，掌握熟悉數位媒體廣告投放。',
-            '數位產品企劃': '產品研發、專案推進、市場洞察、內容精鍊，集PM、行銷等技能於一身！',
-            '數位編輯': '數位教材、教學平台、影音題庫等內容的編排與優化製作，提升產品體驗。'
-        };
 
         const mbtiData = {
             INTJ: { title: '建築師', imageUrl: './img/MBTI_INTJ.jpg', jobs: ['數位產品企劃', '科目產品企劃'], desc: '富有想像力和戰略性的思想家，一切皆在計劃之中。' },
@@ -120,15 +56,13 @@
             ESFP: { title: '表演者', imageUrl: './img/MBTI_ESFP.jpg', jobs: ['數位行銷', '數位編輯'], desc: '自發、精力充沛且熱情的人，周圍總是不乏歡樂。' },
         };
 
-        // --- 圖示元件 ---
         const Icon = ({ name, className }) => {
             const icons = {
                 user: <><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
                 book: <><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>,
                 phone: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>,
                 sparkles: <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>,
-                briefcase: <><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>,
-                check: <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></>,
+                smile: <><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>,
                 external: <><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>,
                 arrowLeft: <><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></>
             };
@@ -144,9 +78,6 @@
             const [loading, setLoading] = useState(false);
             const [message, setMessage] = useState('');
             const [formData, setFormData] = useState({ name: '', major: '', mbti: '', phone: '' });
-            
-            const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
-            const [answers, setAnswers] = useState([]); 
 
             const showMessage = (msg) => {
                 setMessage(msg);
@@ -158,30 +89,15 @@
                 setFormData(prev => ({ ...prev, [name]: value }));
             };
 
-            const handleStartQuiz = (e) => {
+            const handleSubmit = async (e) => {
                 e.preventDefault();
-                setCurrentQuestionIdx(0);
-                setAnswers([]); 
-                setView('quiz');
-            };
-
-            const handleOptionClick = async (value) => {
-                const newAnswers = [...answers, value];
-                setAnswers(newAnswers);
-
-                if (currentQuestionIdx < quizQuestions.length - 1) {
-                    setCurrentQuestionIdx(prev => prev + 1);
-                } else {
-                    const counts = { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
-                    newAnswers.forEach(ans => counts[ans]++);
-                    const finalMbti = `${counts.E >= counts.I ? 'E' : 'I'}${counts.S >= counts.N ? 'S' : 'N'}${counts.T >= counts.F ? 'T' : 'F'}${counts.J >= counts.P ? 'J' : 'P'}`;
-                    const finalFormData = { ...formData, mbti: finalMbti };
-                    setFormData(finalFormData);
-                    await submitData(finalFormData);
+                
+                // 表單驗證防呆
+                if (!formData.mbti) {
+                    showMessage("請選擇您的 MBTI 類型！");
+                    return;
                 }
-            };
 
-            const submitData = async (dataToSubmit) => {
                 setLoading(true);
                 try {
                     if (GOOGLE_SHEET_URL) {
@@ -189,14 +105,13 @@
                             method: 'POST',
                             mode: 'no-cors',
                             headers: { 'Content-Type': 'text/plain' },
-                            body: JSON.stringify(dataToSubmit)
+                            body: JSON.stringify(formData)
                         });
                     }
                     setView('result');
                     window.scrollTo(0,0);
                 } catch (error) {
                     showMessage("連線不穩定，請檢查網路連線後重試。");
-                    setView('form');
                 } finally {
                     setLoading(false);
                 }
@@ -209,7 +124,7 @@
             };
 
             const renderForm = () => (
-                <div className="w-full bg-white lg:rounded-3xl shadow-none lg:shadow-2xl overflow-hidden animate-fade-in border-t-0 lg:border-t-8 border-[#c92e27]">
+                <div className="w-full bg-white md:rounded-3xl shadow-none md:shadow-2xl overflow-hidden animate-fade-in border-t-0 md:border-t-8 border-[#c92e27]">
                     <img 
                         src="./img/main_banner.jpg" 
                         alt="龍騰文化 職涯性格探索" 
@@ -221,83 +136,50 @@
                         }} 
                     />
                     
-                    {/* 💡 iPad 上給予更寬裕的 padding */}
-                    <form onSubmit={handleStartQuiz} className="p-8 md:p-12 lg:p-8 space-y-6">
+                    <form onSubmit={handleSubmit} className="p-8 md:p-12 lg:p-8 space-y-6">
                         <div className="space-y-4">
                             <div className="relative">
                                 <Icon name="user" className="absolute left-4 top-4 text-gray-400 w-5 h-5" />
-                                <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="pl-12 w-full rounded-xl border-gray-200 border-2 p-4 focus:border-[#c92e27] focus:ring-1 focus:ring-[#c92e27] outline-none transition-all" placeholder="填寫姓名" />
+                                <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="pl-12 w-full rounded-xl border-gray-200 border-2 p-4 focus:border-[#c92e27] focus:ring-1 focus:ring-[#c92e27] outline-none transition-all bg-white" placeholder="填寫姓名" />
                             </div>
                             <div className="relative">
                                 <Icon name="book" className="absolute left-4 top-4 text-gray-400 w-5 h-5" />
-                                <input required type="text" name="major" value={formData.major} onChange={handleInputChange} className="pl-12 w-full rounded-xl border-gray-200 border-2 p-4 focus:border-[#c92e27] focus:ring-1 focus:ring-[#c92e27] outline-none transition-all" placeholder="就讀科系" />
+                                <input required type="text" name="major" value={formData.major} onChange={handleInputChange} className="pl-12 w-full rounded-xl border-gray-200 border-2 p-4 focus:border-[#c92e27] focus:ring-1 focus:ring-[#c92e27] outline-none transition-all bg-white" placeholder="就讀科系" />
                             </div>
                             <div className="relative">
                                 <Icon name="phone" className="absolute left-4 top-4 text-gray-400 w-5 h-5" />
-                                <input required type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="pl-12 w-full rounded-xl border-gray-200 border-2 p-4 focus:border-[#c92e27] focus:ring-1 focus:ring-[#c92e27] outline-none transition-all" placeholder="手機號碼" />
+                                <input required type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="pl-12 w-full rounded-xl border-gray-200 border-2 p-4 focus:border-[#c92e27] focus:ring-1 focus:ring-[#c92e27] outline-none transition-all bg-white" placeholder="手機號碼" />
+                            </div>
+                            <div className="relative">
+                                <Icon name="smile" className="absolute left-4 top-4 text-gray-400 w-5 h-5" />
+                                <select required name="mbti" value={formData.mbti} onChange={handleInputChange} className="pl-12 w-full rounded-xl border-gray-200 border-2 p-4 focus:border-[#c92e27] focus:ring-1 focus:ring-[#c92e27] outline-none transition-all bg-white text-gray-700 custom-select cursor-pointer">
+                                    <option value="" disabled>請選擇您的 MBTI 型態</option>
+                                    {Object.keys(mbtiData).map(key => (
+                                        <option key={key} value={key}>{key} - {mbtiData[key].title}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
                         <div className="px-1 py-2">
                             <p className="text-[10px] text-gray-400 leading-relaxed text-left">
-                                本測驗蒐集之資料僅供龍騰文化事業股份有限公司人力資源部進行招募聯繫與內部統計使用，我們承諾尊重您的隱私且不將資料用於他途。點擊「開始探索」即代表您同意上述條款。
+                                本資料僅供龍騰文化事業股份有限公司人力資源部進行招募聯繫與內部統計使用，我們承諾尊重您的隱私且不將資料用於他途。點擊「觀看專屬結果」即代表您同意上述條款。
                             </p>
                         </div>
 
-                        <button type="submit" className="w-full flex items-center justify-center gap-2 bg-[#c92e27] hover:bg-[#a8251f] text-white font-bold py-5 px-4 rounded-2xl shadow-lg transition-all transform active:scale-95 text-lg">
-                            <Icon name="sparkles" className="w-5 h-5" /> 開始探索你的天賦
+                        <button type="submit" disabled={loading} className={`w-full flex items-center justify-center gap-2 bg-[#c92e27] hover:bg-[#a8251f] text-white font-bold py-5 px-4 rounded-2xl shadow-lg transition-all transform active:scale-95 text-lg ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                            <Icon name="sparkles" className="w-5 h-5" /> 
+                            {loading ? '資料傳送中...' : '觀看專屬結果'}
                         </button>
                     </form>
                 </div>
             );
 
-            const renderQuiz = () => {
-                const question = quizQuestions[currentQuestionIdx];
-                const progress = ((currentQuestionIdx + 1) / quizQuestions.length) * 100;
-
-                return (
-                    <div className="w-full bg-white lg:rounded-3xl shadow-none lg:shadow-2xl overflow-hidden animate-fade-in border-t-0 lg:border-t-8 border-[#c92e27] pb-8 md:pb-12 lg:pb-8">
-                        <div className="px-8 md:px-12 lg:px-8 pt-8 md:pt-12 lg:pt-8 pb-4">
-                            <div className="w-full bg-gray-100 rounded-full h-2 mb-6">
-                                <div className="bg-[#c92e27] h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
-                            </div>
-                            <div className="text-[#c92e27] font-black tracking-widest text-sm mb-4">
-                                QUESTION {currentQuestionIdx + 1} / {quizQuestions.length}
-                            </div>
-                            <h2 className="text-2xl md:text-3xl lg:text-2xl font-bold text-gray-800 leading-snug mb-8 min-h-[80px]">
-                                {question.text}
-                            </h2>
-                            
-                            <div className="space-y-4">
-                                {question.options.map((option, idx) => (
-                                    <button 
-                                        key={idx}
-                                        onClick={() => handleOptionClick(option.value)}
-                                        disabled={loading}
-                                        className="w-full text-left p-5 md:p-6 lg:p-5 rounded-2xl border-2 border-gray-100 hover:border-[#c92e27] hover:bg-red-50 text-gray-700 font-medium md:text-lg lg:text-base transition-all transform active:scale-95 shadow-sm animate-slide-up"
-                                        style={{ animationDelay: `${idx * 0.1}s` }}
-                                    >
-                                        {option.text}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {loading && (
-                            <div className="text-center mt-6 text-[#c92e27] font-bold animate-pulse">
-                                正在為您結算專屬結果...
-                            </div>
-                        )}
-                    </div>
-                );
-            };
-
             const renderResult = () => {
                 const result = mbtiData[formData.mbti] || mbtiData['INTJ'];
                 return (
-                    <div className="w-full bg-white lg:rounded-3xl shadow-none lg:shadow-2xl overflow-hidden animate-fade-in">
+                    <div className="w-full bg-white md:rounded-3xl shadow-none md:shadow-2xl overflow-hidden animate-fade-in border-t-0 md:border-t-8 border-[#c92e27]">
                         
-                        {/* 💡 放寬高度限制：移除 70vh 限制，讓 3:4 的圖片在 iPad 上能完美自然延展 */}
                         <img src={result.imageUrl} alt={formData.mbti} 
                              onError={(e) => { 
                                  if(!e.target.src.includes('placehold.co')) {
@@ -306,7 +188,6 @@
                              }}
                              className="w-full h-auto max-h-[85vh] lg:max-h-[75vh] object-contain bg-white block mx-auto" />
                         
-                        {/* 💡 底部按鈕區 */}
                         <div className="p-6 md:p-10 lg:p-8 space-y-4 bg-white border-t lg:border-t-0 border-gray-50">
                             <a 
                                 href="https://www.104.com.tw/company/au6siqw" 
@@ -318,7 +199,7 @@
                             </a>
 
                             <button onClick={handleReset} className="flex items-center justify-center w-full gap-2 text-gray-400 hover:text-gray-600 font-medium transition py-3 text-base">
-                                <Icon name="arrowLeft" className="w-4 h-4" /> 再玩一次
+                                <Icon name="arrowLeft" className="w-4 h-4" /> 回到首頁重新填寫
                             </button>
                         </div>
                     </div>
@@ -326,25 +207,21 @@
             };
 
             return (
-                // 💡 只有 lg (1024px, 電腦版) 才會顯示灰底，手機與 iPad 皆為白底滿版
-                <div className="min-h-[100dvh] bg-white lg:bg-[#f3f4f6] font-sans flex flex-col">
+                <div className="min-h-[100dvh] bg-[#f3f4f6] font-sans flex flex-col">
                     {message && (
                         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full z-50 animate-fade-in shadow-xl text-sm font-bold">
                             {message}
                         </div>
                     )}
                     
-                    {/* 💡 放寬 iPad 的尺寸限制：在 md 尺寸下放到 max-w-2xl(672px)，lg 尺寸收斂為 max-w-md(448px) */}
-                    <div className="flex-grow flex flex-col justify-center items-center w-full px-0 lg:px-6 py-0 lg:py-12">
-                        <div className="w-full max-w-md md:max-w-2xl lg:max-w-md my-auto">
+                    <div className="flex-grow flex flex-col justify-center items-center w-full px-0 md:px-6 py-0 md:py-12">
+                        <div className="w-full max-w-md md:max-w-2xl lg:max-w-md my-auto bg-white md:bg-transparent">
                             {view === 'form' && renderForm()}
-                            {view === 'quiz' && renderQuiz()}
                             {view === 'result' && renderResult()}
                         </div>
                     </div>
                     
-                    {/* 頁尾 */}
-                    <div className="w-full text-center pb-6 pt-4 bg-white lg:bg-transparent">
+                    <div className="w-full text-center pb-6 pt-4 bg-white md:bg-transparent">
                         <p className="text-xs text-gray-400">2026 龍騰文化事業股份有限公司 © 版權所有</p>
                     </div>
                 </div>
