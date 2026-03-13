@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>龍騰文化 - 職涯潛力探索</title>
+    <!-- 引入 Tailwind CSS 與 React -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,7 +12,7 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; overflow: hidden; }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -92,7 +93,6 @@
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 
-                // 表單驗證防呆
                 if (!formData.mbti) {
                     showMessage("請選擇您的 MBTI 類型！");
                     return;
@@ -109,7 +109,6 @@
                         });
                     }
                     setView('result');
-                    window.scrollTo(0,0);
                 } catch (error) {
                     showMessage("連線不穩定，請檢查網路連線後重試。");
                 } finally {
@@ -120,15 +119,14 @@
             const handleReset = () => {
                 setFormData({ name: '', major: '', mbti: '', phone: '' });
                 setView('form');
-                window.scrollTo(0,0);
             };
 
             const renderForm = () => (
-                <div className="w-full bg-white md:rounded-3xl shadow-none md:shadow-2xl overflow-hidden animate-fade-in border-t-0 md:border-t-8 border-[#c92e27]">
+                <>
                     <img 
                         src="./img/main_banner.jpg" 
                         alt="龍騰文化 職涯性格探索" 
-                        className="w-full h-auto max-h-[40vh] md:max-h-[50vh] lg:max-h-[40vh] object-cover block"
+                        className="w-full h-32 md:h-48 object-cover flex-none"
                         onError={(e) => { 
                             if(!e.target.src.includes('placehold.co')) {
                                 e.target.src = 'https://placehold.co/1080x720/c92e27/ffffff?text=主要Banner圖片';
@@ -136,7 +134,8 @@
                         }} 
                     />
                     
-                    <form onSubmit={handleSubmit} className="p-8 md:p-12 lg:p-8 space-y-6">
+                    {/* 表單區塊：設定為可滑動，避免手機螢幕太小或鍵盤彈出時跑版 */}
+                    <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5 flex-shrink overflow-y-auto hide-scrollbar">
                         <div className="space-y-4">
                             <div className="relative">
                                 <Icon name="user" className="absolute left-4 top-4 text-gray-400 w-5 h-5" />
@@ -161,34 +160,37 @@
                             </div>
                         </div>
 
-                        <div className="px-1 py-2">
+                        <div className="px-1 py-1">
                             <p className="text-[10px] text-gray-400 leading-relaxed text-left">
-                                本資料僅供龍騰文化事業股份有限公司人力資源部進行招募聯繫與內部統計使用，我們承諾尊重您的隱私且不將資料用於他途。點擊「觀看專屬結果」即代表您同意上述條款。
+                                本資料僅供龍騰文化進行招募聯繫與內部統計使用，點擊「觀看專屬結果」即代表您同意上述條款。
                             </p>
                         </div>
 
-                        <button type="submit" disabled={loading} className={`w-full flex items-center justify-center gap-2 bg-[#c92e27] hover:bg-[#a8251f] text-white font-bold py-5 px-4 rounded-2xl shadow-lg transition-all transform active:scale-95 text-lg ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                        <button type="submit" disabled={loading} className={`w-full flex items-center justify-center gap-2 bg-[#c92e27] hover:bg-[#a8251f] text-white font-bold py-4 px-4 rounded-2xl shadow-lg transition-all transform active:scale-95 text-lg ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}>
                             <Icon name="sparkles" className="w-5 h-5" /> 
                             {loading ? '資料傳送中...' : '觀看專屬結果'}
                         </button>
                     </form>
-                </div>
+                </>
             );
 
             const renderResult = () => {
                 const result = mbtiData[formData.mbti] || mbtiData['INTJ'];
                 return (
-                    <div className="w-full bg-white md:rounded-3xl shadow-none md:shadow-2xl overflow-hidden animate-fade-in border-t-0 md:border-t-8 border-[#c92e27]">
+                    <>
+                        {/* 圖片區塊：自動伸展並將圖片等比縮放至滿版，絕對不會超出螢幕 */}
+                        <div className="flex-grow min-h-0 w-full p-4 md:p-8 flex justify-center items-center bg-white">
+                            <img src={result.imageUrl} alt={formData.mbti} 
+                                 onError={(e) => { 
+                                     if(!e.target.src.includes('placehold.co')) {
+                                         e.target.src = 'https://placehold.co/1080x1440/c92e27/ffffff?text=' + formData.mbti + '+專屬結果卡';
+                                     }
+                                 }}
+                                 className="w-full h-full object-contain" />
+                        </div>
                         
-                        <img src={result.imageUrl} alt={formData.mbti} 
-                             onError={(e) => { 
-                                 if(!e.target.src.includes('placehold.co')) {
-                                     e.target.src = 'https://placehold.co/1080x1440/c92e27/ffffff?text=' + formData.mbti + '+專屬結果卡';
-                                 }
-                             }}
-                             className="w-full h-auto max-h-[85vh] lg:max-h-[75vh] object-contain bg-white block mx-auto" />
-                        
-                        <div className="p-6 md:p-10 lg:p-8 space-y-4 bg-white border-t lg:border-t-0 border-gray-50">
+                        {/* 底部按鈕：固定在下方 */}
+                        <div className="flex-none p-6 md:p-8 pt-0 space-y-3 bg-white">
                             <a 
                                 href="https://www.104.com.tw/company/au6siqw" 
                                 target="_blank" 
@@ -198,30 +200,34 @@
                                 歡迎加入我們 <Icon name="external" className="w-5 h-5 opacity-70" />
                             </a>
 
-                            <button onClick={handleReset} className="flex items-center justify-center w-full gap-2 text-gray-400 hover:text-gray-600 font-medium transition py-3 text-base">
+                            <button onClick={handleReset} className="flex items-center justify-center w-full gap-2 text-gray-400 hover:text-gray-600 font-medium transition py-2 text-base">
                                 <Icon name="arrowLeft" className="w-4 h-4" /> 回到首頁重新填寫
                             </button>
                         </div>
-                    </div>
+                    </>
                 );
             };
 
             return (
-                <div className="min-h-[100dvh] bg-[#f3f4f6] font-sans flex flex-col">
+                // 最外層鎖死 100dvh，防止背景跟著亂滑
+                <div className="h-[100dvh] bg-[#f3f4f6] font-sans flex flex-col items-center justify-center p-4 md:p-6 overflow-hidden">
                     {message && (
-                        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full z-50 animate-fade-in shadow-xl text-sm font-bold">
+                        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full z-50 animate-fade-in shadow-xl text-sm font-bold">
                             {message}
                         </div>
                     )}
                     
-                    <div className="flex-grow flex flex-col justify-center items-center w-full px-0 md:px-6 py-0 md:py-12">
-                        <div className="w-full max-w-md md:max-w-2xl lg:max-w-md my-auto bg-white md:bg-transparent">
-                            {view === 'form' && renderForm()}
-                            {view === 'result' && renderResult()}
-                        </div>
+                    {/* 卡片主體：設定最大高度與寬度，讓它在各種設備下都保持「卡片感」 */}
+                    <div 
+                        className="w-full max-w-md md:max-w-lg bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col relative animate-fade-in"
+                        style={{ maxHeight: 'calc(100dvh - 5rem)' }}
+                    >
+                        {view === 'form' && renderForm()}
+                        {view === 'result' && renderResult()}
                     </div>
                     
-                    <div className="w-full text-center pb-6 pt-4 bg-white md:bg-transparent">
+                    {/* 頁尾 */}
+                    <div className="flex-none mt-4">
                         <p className="text-xs text-gray-400">2026 龍騰文化事業股份有限公司 © 版權所有</p>
                     </div>
                 </div>
